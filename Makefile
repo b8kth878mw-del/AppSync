@@ -14,6 +14,14 @@ SUBPROJECTS += asu_inject
 
 include $(THEOS_MAKE_PATH)/aggregate.mk
 
+# 在打成 deb 包的最后一刻，修正 Roothide 专属的相对路径问题，并重新进行 ldid 签名
+before-package::
+	@echo "==> Fixing Roothide paths for DEBIAN scripts to prevent dpkg crash..."
+	@-install_name_tool -change @loader_path/.jbroot/usr/lib/libroothide.dylib @loader_path/../../../usr/lib/libroothide.dylib $(THEOS_STAGING_DIR)/DEBIAN/postinst 2>/dev/null || true
+	@-install_name_tool -change @loader_path/.jbroot/usr/lib/libroothide.dylib @loader_path/../../../usr/lib/libroothide.dylib $(THEOS_STAGING_DIR)/DEBIAN/prerm 2>/dev/null || true
+	@-ldid -S$(THEOS_PROJECT_DIR)/entitlements.plist $(THEOS_STAGING_DIR)/DEBIAN/postinst 2>/dev/null || true
+	@-ldid -S$(THEOS_PROJECT_DIR)/entitlements.plist $(THEOS_STAGING_DIR)/DEBIAN/prerm 2>/dev/null || true
+
 package::
 ifndef THEOS_PACKAGE_SCHEME
 	@$(_THEOS_PLATFORM_DPKG_DEB) -b -Zgzip "transitional/nodelete-net.angelxwind.appsyncunified" "$(THEOS_PACKAGE_DIR_NAME)/nodelete-net.angelxwind.appsyncunified.deb"
