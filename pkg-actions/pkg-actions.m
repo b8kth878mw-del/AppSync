@@ -8,8 +8,11 @@
 #include <string.h>
 #include <unistd.h>
 #include <stdio.h>
-// 彻底移除 rootless.h，断开依赖
-// #import <rootless.h> 
+
+// 补充缺失的 iOS 10 宏定义，防止在使用旧版 SDK (如 armv7) 编译时报错
+#ifndef kCFCoreFoundationVersionNumber_iOS_10_0
+#define kCFCoreFoundationVersionNumber_iOS_10_0 1348.00
+#endif
 
 #ifdef DEBUG
 	#define LOG(LogContents, ...) NSLog((@"[AppSync Unified] [pkg-actions] [%s] [L%d] " LogContents), __FUNCTION__, __LINE__, ##__VA_ARGS__)
