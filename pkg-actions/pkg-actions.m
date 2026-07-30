@@ -1,17 +1,37 @@
 #import <CoreFoundation/CFUserNotification.h>
 #import <CoreFoundation/CoreFoundation.h>
 #import <Foundation/Foundation.h>
-#import <rootless.h>
 
 #include <spawn.h>
 #include <sys/stat.h>
-#include <version.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <stdio.h>
+// 彻底移除 rootless.h，断开依赖
+// #import <rootless.h> 
 
 #ifdef DEBUG
 	#define LOG(LogContents, ...) NSLog((@"[AppSync Unified] [pkg-actions] [%s] [L%d] " LogContents), __FUNCTION__, __LINE__, ##__VA_ARGS__)
 #else
 	#define LOG(...)
 #endif
+
+// 自行实现 ROOT_PATH，利用 dpkg 给脚本下发的环境变量，完全摆脱对 libroothide.dylib 的需求
+static const char *get_root_path(const char *path) {
+	char *buffer = malloc(1024);
+	const char *jb_root = getenv("JB_ROOT_PATH");
+	if (!jb_root) {
+		if (access("/var/jb", F_OK) == 0) {
+			jb_root = "/var/jb";
+		} else {
+			jb_root = "";
+		}
+	}
+	snprintf(buffer, 1024, "%s%s", jb_root, path);
+	return buffer;
+}
+#define ROOT_PATH(path) get_root_path(path)
 
 #define DPKG_PATH ROOT_PATH("/var/lib/dpkg/info/ai.akemi.appsyncunified.list")
 
