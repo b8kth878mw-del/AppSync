@@ -1,4 +1,4 @@
-name: Build JumpSelect
+name: Build Appsync
 
 on:  
   workflow_dispatch:
@@ -42,4 +42,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: hotai-Packages
-          path: packages/*.deb
+          path: debs/*.deb
